@@ -21,7 +21,9 @@
   --clr-success:    #27ae60;
 
   --ff-serif: "Playfair Display", Georgia, serif;
-  --ff-sans:  "Poppins", system-ui, sans-serif;
+  --ff-sans:  "Be Vietnam Pro", system-ui, sans-serif;
+  --ff-digits: "Nunito", "Be Vietnam Pro", system-ui, sans-serif;
+  --countdown-swap: 520ms;
 
   --shadow-sm: 0 2px 12px rgba(58,46,38,.08);
   --shadow-md: 0 8px 32px rgba(58,46,38,.14);
@@ -130,14 +132,15 @@ button {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, .65);
+  background: rgba(0, 0, 0, .9);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
   transition: opacity .3s ease, visibility .3s ease;
-  padding: 20px;
+  /* Room for the close button (top) and counter (bottom), respecting notches */
+  padding: calc(64px + env(safe-area-inset-top)) 16px calc(56px + env(safe-area-inset-bottom));
 }
 
 .lightbox-modal.active {
@@ -147,8 +150,9 @@ button {
 
 .lightbox-container {
   position: relative;
-  width: 90vw;
-  height: 85vh;
+  width: 100%;
+  max-width: 1100px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,8 +274,8 @@ button {
 
 .lightbox-close {
   position: absolute;
-  top: -40px;
-  right: 0;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 16px;
   width: 40px;
   height: 40px;
   background: rgba(255, 255, 255, .2);
@@ -311,36 +315,30 @@ button {
 }
 
 .lightbox-prev {
-  left: -60px;
+  left: 24px;
 }
 
 .lightbox-next {
-  right: -60px;
+  right: 24px;
 }
 
 @media (max-width: 768px) {
+  /* Arrows overlay the photo edges, vertically centred with it */
   .lightbox-prev,
   .lightbox-next {
-    position: static;
-    transform: none;
     width: 36px;
     height: 36px;
     font-size: 1.2rem;
-    margin: 0 10px;
+    background: rgba(0, 0, 0, .35);
   }
 
-  .lightbox-container {
-    flex-direction: column;
-  }
-
-  .lightbox-image.current {
-    max-height: 60vh;
-  }
+  .lightbox-prev { left: 8px; }
+  .lightbox-next { right: 8px; }
 }
 
 .lightbox-counter {
   position: absolute;
-  bottom: -50px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   color: white;
@@ -899,119 +897,6 @@ button {
 .event-address { 
   font-size: .85rem; 
   opacity: .75; 
-}
-
-/* ════════════════════════════════
-   COUNTDOWN — PULSE ANIMATION
-════════════════════════════════ */
-.countdown-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  max-width: 640px;
-  margin-inline: auto;
-}
-
-@media (min-width: 480px) { 
-  .countdown-grid { 
-    grid-template-columns: repeat(4, 1fr); 
-  } 
-}
-
-.countdown-item {
-  background: var(--clr-white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  padding: 28px 16px;
-  text-align: center;
-  border: 1px solid var(--clr-accent-lt);
-  transition: transform .3s ease, box-shadow .3s ease;
-  will-change: transform;
-}
-
-.countdown-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-/* ── Rolling Number Container ── */
-.countdown-roll {
-  position: relative;
-  height: clamp(3.2rem, 9vw, 4.5rem);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.countdown-number {
-  display: block;
-  font-family: var(--ff-serif);
-  font-size: clamp(3.2rem, 9vw, 4.5rem);
-  font-weight: 700;
-  color: var(--clr-primary);
-  line-height: 1;
-  position: absolute;
-  width: 100%;
-  text-align: center;
-}
-
-.countdown-number.pulse {
-  animation: countdown-pulse 1.5s ease-in-out infinite;
-  position: relative;
-}
-
-@keyframes countdown-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* ── Premium Rolling Animation ── */
-.countdown-number.current {
-  /* Animation only triggers when container has .animate class */
-}
-
-.countdown-number.next {
-  /* Animation only triggers when container has .animate class */
-}
-
-/* Synchronized animations triggered by .animate class on container */
-.countdown-roll.animate .countdown-number.current {
-  animation: slideDown 600ms cubic-bezier(.22, 1, .36, 1) forwards;
-}
-
-.countdown-roll.animate .countdown-number.next {
-  animation: slideUp 600ms cubic-bezier(.22, 1, .36, 1) forwards;
-}
-
-@keyframes slideDown {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-}
-
-@keyframes slideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.countdown-label {
-  font-size: .75rem;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  color: var(--clr-text-muted);
 }
 
 /* ════════════════════════════════
@@ -1801,47 +1686,58 @@ textarea {
   background: var(--clr-white);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  padding: 28px 16px;
+  padding: 28px 16px 24px;
   text-align: center;
   border: 1px solid var(--clr-accent-lt);
+  /* Keeps the outgoing/incoming digits inside the card while they travel */
+  overflow: hidden;
+  transition: transform .3s ease, box-shadow .3s ease;
 }
+.countdown-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Digit stack: old value rises & fades out, new value rises in from below ── */
 .countdown-roll {
   position: relative;
-  height: clamp(3.2rem, 9vw, 4.5rem);
-  overflow: hidden;
+  height: clamp(3.4rem, 11vw, 4.75rem);
+  margin-bottom: 10px;
+}
+.countdown-number {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-}
-.countdown-number {
-  display: block;
-  font-family: var(--ff-serif);
-  font-size: clamp(3.2rem, 9vw, 4.5rem);
-  font-weight: 700;
+  font-family: var(--ff-digits);
+  font-size: clamp(3.4rem, 11vw, 4.75rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
   color: var(--clr-primary);
   line-height: 1;
-  position: absolute;
-  width: 100%;
-  text-align: center;
+  will-change: transform, opacity;
 }
-.countdown-number.pulse {
-  animation: countdown-pulse 1.5s ease-in-out infinite;
-  position: relative;
+.countdown-number.is-leaving {
+  animation: countdown-leave var(--countdown-swap) cubic-bezier(.33, 1, .68, 1) forwards;
 }
-.countdown-number.current {
-  /* Animation only triggers when container has .animate class */
+.countdown-number.is-entering {
+  animation: countdown-enter var(--countdown-swap) cubic-bezier(.33, 1, .68, 1) forwards;
 }
-.countdown-number.next {
-  /* Animation only triggers when container has .animate class */
+@keyframes countdown-leave {
+  from { opacity: 1; transform: translateY(0)    scale(1); }
+  to   { opacity: 0; transform: translateY(-65%) scale(.92); }
 }
-/* Synchronized animations triggered by .animate class on container */
-.countdown-roll.animate .countdown-number.current {
-  animation: slideDown 600ms cubic-bezier(.22, 1, .36, 1) forwards;
+@keyframes countdown-enter {
+  from { opacity: 0; transform: translateY(65%)  scale(.92); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
-.countdown-roll.animate .countdown-number.next {
-  animation: slideUp 600ms cubic-bezier(.22, 1, .36, 1) forwards;
+@media (prefers-reduced-motion: reduce) {
+  .countdown-number.is-leaving,
+  .countdown-number.is-entering { animation-duration: 1ms; }
 }
+
 .countdown-label {
   font-size: .75rem;
   letter-spacing: .2em;

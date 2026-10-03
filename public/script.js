@@ -473,7 +473,8 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
 })();
 
 /* ─────────────────────────────────────────────────────────
-   COUNTDOWN TIMER — Premium iOS-style Rolling Animation
+   COUNTDOWN TIMER — old value rises & fades out while the
+   new value rises in from below (both digits move together)
 ───────────────────────────────────────────────────────── */
 (function initCountdown() {
   const rollDays = document.getElementById("roll-days");
@@ -486,50 +487,28 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
   }
 
   function animateRollingNumber(rollContainer, newValue) {
-    // Get current active element (the one with .pulse class)
-    const currentEl = rollContainer.querySelector(".countdown-number.pulse");
-    
-    // If no change needed, return early
-    if (currentEl && currentEl.textContent === newValue) {
-      return;
-    }
+    // The settled value is the last number that isn't on its way out
+    const numbers = rollContainer.querySelectorAll(".countdown-number:not(.is-leaving)");
+    const currentEl = numbers[numbers.length - 1];
 
-    // Clean up any incomplete animations (remove stale elements)
-    const staleElements = rollContainer.querySelectorAll(".countdown-number:not(.pulse)");
-    staleElements.forEach((el) => el.remove());
+    if (currentEl && currentEl.textContent === newValue) return;
 
-    // If this is the first render, just add the number without animation
-    if (!currentEl) {
-      const newEl = document.createElement("span");
-      newEl.className = "countdown-number pulse";
-      newEl.textContent = newValue;
-      rollContainer.appendChild(newEl);
-      return;
-    }
+    // Drop anything still animating from a previous swap (e.g. tab was hidden)
+    rollContainer.querySelectorAll(".countdown-number.is-leaving").forEach((el) => el.remove());
 
-    // Create next number element
     const nextEl = document.createElement("span");
-    nextEl.className = "countdown-number next";
+    nextEl.className = "countdown-number";
     nextEl.textContent = newValue;
     rollContainer.appendChild(nextEl);
 
-    // Add .current class to current element for animation
-    currentEl.classList.add("current");
+    if (!currentEl) return;
 
-    // Force reflow to ensure animations trigger
-    void rollContainer.offsetHeight;
+    currentEl.classList.remove("is-entering");
+    currentEl.classList.add("is-leaving");
+    nextEl.classList.add("is-entering");
 
-    // Add .animate class to container to trigger synchronized animations
-    rollContainer.classList.add("animate");
-
-    // After animation completes (600ms)
-    setTimeout(() => {
-      rollContainer.classList.remove("animate");
-      currentEl.classList.remove("current");
-      currentEl.remove();
-      nextEl.classList.remove("next");
-      nextEl.classList.add("pulse");
-    }, 600);
+    currentEl.addEventListener("animationend", () => currentEl.remove(), { once: true });
+    nextEl.addEventListener("animationend", () => nextEl.classList.remove("is-entering"), { once: true });
   }
 
   function tick() {
@@ -576,7 +555,7 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
       iconOn.style.display = "block";
       iconOff.style.display = "none";
       btn.classList.remove("playing");
-      btn.setAttribute("aria-label", "Play background music");
+      btn.setAttribute("aria-label", "Phát nhạc nền");
     } else {
       audio.play().catch(() => {
         /* autoplay blocked — browser policy prevents it */
@@ -584,7 +563,7 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
       iconOn.style.display = "none";
       iconOff.style.display = "block";
       btn.classList.add("playing");
-      btn.setAttribute("aria-label", "Pause background music");
+      btn.setAttribute("aria-label", "Tạm dừng nhạc nền");
     }
     playing = !playing;
   }
@@ -695,11 +674,11 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
 
     if (field.id === "rsvp-name") {
       isValid = field.value.trim().length >= 2;
-      message = "Name must be at least 2 characters";
+      message = "Họ tên phải có ít nhất 2 ký tự";
     } else if (field.id === "rsvp-email" && field.value) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       isValid = emailRegex.test(field.value);
-      message = "Please enter a valid email address";
+      message = "Vui lòng nhập địa chỉ email hợp lệ";
     }
 
     if (!isValid) {
@@ -732,7 +711,7 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
     }
 
     if (!form.attendance.value) {
-      alert("Please select your attendance.");
+      alert("Vui lòng chọn bạn có tham dự hay không.");
       isFormValid = false;
     }
 
