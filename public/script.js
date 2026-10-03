@@ -545,59 +545,60 @@ const WEDDING_LOCATION = "Tư gia, Thôn 3 Hạ Lôi, Xã Mê Linh, Hà Nội, V
   const audio = document.getElementById("bg-music");
   const iconOn = document.getElementById("music-icon-on");
   const iconOff = document.getElementById("music-icon-off");
-  let playing = false;
-  let autoplayAttempted = false;
+  if (!btn || !audio) return;
 
-  // Function to toggle music
-  function toggleMusic() {
-    if (playing) {
-      audio.pause();
-      iconOn.style.display = "block";
-      iconOff.style.display = "none";
-      btn.classList.remove("playing");
-      btn.setAttribute("aria-label", "Phát nhạc nền");
+  // The button always mirrors the real audio state:
+  // playing → music note (tap to mute), paused → crossed-out note (tap to play)
+  function render() {
+    const playing = !audio.paused;
+    iconOn.style.display = playing ? "block" : "none";
+    iconOff.style.display = playing ? "none" : "block";
+    btn.classList.toggle("playing", playing);
+    const label = playing ? "Tắt nhạc nền" : "Bật nhạc nền";
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  }
+  audio.addEventListener("play", render);
+  audio.addEventListener("pause", render);
+  render();
+
+  // Music is on by default; once the guest mutes it, never auto-start again
+  let userMuted = false;
+
+  function tryPlay() {
+    return audio.play().then(
+      () => true,
+      () => false // blocked until the guest interacts with the page
+    );
+  }
+
+  // Browsers block audible autoplay until the first tap/click/keypress,
+  // so start the music on that first interaction if it couldn't start on load.
+  const unlockEvents = ["pointerdown", "touchend", "click", "keydown"];
+  function removeUnlock() {
+    unlockEvents.forEach((type) => document.removeEventListener(type, onFirstInteraction, true));
+  }
+  function onFirstInteraction(e) {
+    // A tap on the music button is handled by its own click handler
+    if (btn.contains(e.target)) return;
+    if (userMuted || !audio.paused) return removeUnlock();
+    tryPlay().then((ok) => ok && removeUnlock());
+  }
+
+  btn.addEventListener("click", () => {
+    removeUnlock();
+    if (audio.paused) {
+      userMuted = false;
+      tryPlay();
     } else {
-      audio.play().catch(() => {
-        /* autoplay blocked — browser policy prevents it */
-      });
-      iconOn.style.display = "none";
-      iconOff.style.display = "block";
-      btn.classList.add("playing");
-      btn.setAttribute("aria-label", "Tạm dừng nhạc nền");
+      userMuted = true;
+      audio.pause();
     }
-    playing = !playing;
-  }
+  });
 
-  // Handle button click
-  btn.addEventListener("click", toggleMusic);
-
-  // Attempt autoplay on first user interaction (respects browser policies)
-  function attemptAutoplay() {
-    if (!autoplayAttempted) {
-      autoplayAttempted = true;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            // Autoplay succeeded
-            playing = true;
-            iconOn.style.display = "none";
-            iconOff.style.display = "block";
-            btn.classList.add("playing");
-            document.removeEventListener("click", attemptAutoplay);
-            document.removeEventListener("scroll", attemptAutoplay);
-          })
-          .catch(() => {
-            /* Autoplay blocked by browser — user must click button */
-            autoplayAttempted = false;
-          });
-      }
-    }
-  }
-
-  // Try to autoplay on first user interaction
-  document.addEventListener("click", attemptAutoplay, { once: true });
-  document.addEventListener("scroll", attemptAutoplay, { once: true, passive: true });
+  tryPlay().then((ok) => {
+    if (!ok) unlockEvents.forEach((type) => document.addEventListener(type, onFirstInteraction, true));
+  });
 })();
 
 /* ─────────────────────────────────────────────────────────
