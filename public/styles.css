@@ -1763,6 +1763,8 @@ textarea {
 }
 .gallery-item--wide { grid-column: span 2; aspect-ratio: 2/1; }
 .gallery-item--tall { grid-row: span 2; aspect-ratio: 1/2; }
+/* Tall only in the 3-column layout, so both 2- and 3-column grids end without a gap */
+@media (min-width: 640px) { .gallery-item--tall-md { grid-row: span 2; aspect-ratio: 1/2; } }
 
 .gallery-item img {
   width: 100%;

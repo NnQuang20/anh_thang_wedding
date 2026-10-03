@@ -4,7 +4,7 @@
 |-----------------------------|-----------------------------------------------------|
 | cover.webp                  | Hero / parallax background image                    |
 | couple.webp                 | Couple photo used in the "Our Story" section        |
-| gallery1.webp – gallery12.webp | Gallery photos (gallery5 & gallery9 use tall span) |
+| gallery1.webp – gallery18.webp | Gallery photos (gallery5, 9, 15 use tall span) |
 | map.png                     | Static map screenshot for the venue                 |
 | music.mp3                   | Background music (autoplay disabled by default)     |
 
