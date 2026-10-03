@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+.env
+.env.*
+.netlify
+.tanstack
+.output
+.vinxi
+*.local
+CLAUDE.local.md
+.claude
+.DS_Store
